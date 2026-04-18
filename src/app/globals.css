@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "UTM ViceroyJF";
+  src: url("/fonts/utm-viceroyjf.woff2") format("woff2"),
+       url("/fonts/utm-viceroyjf.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "UTM Edwardian";
+  src: url("/fonts/utm-edwardian.woff2") format("woff2"),
+       url("/fonts/utm-edwardian.woff") format("woff"),
+       url("/fonts/utm-edwardian.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg: 252 252 253;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-serif), serif;
+  color: rgb(2 6 23);
+  background: radial-gradient(1200px 600px at 20% 10%, rgba(244, 63, 94, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(242, 176, 29, 0.14), transparent 55%),
+    linear-gradient(to bottom, rgb(252 252 253), rgb(245 246 250));
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(244, 63, 94, 0.22);
+}
+
+/* ── DoorHero CSS-driven animations ── */
+.door-flap-left,
+.door-flap-right {
+  will-change: transform, opacity;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.door-card {
+  will-change: transform, opacity;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: scale(0.88);
+  opacity: 0;
+}
+
+.door-title,
+.door-title-top {
+  will-change: transform, opacity;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+/* ── OPEN state ── */
+.door-hero.is-open .door-flap-left {
+  transform: translate3d(-105%, 0, 0);
+  opacity: 0;
+}
+
+.door-hero.is-open .door-flap-right {
+  transform: translate3d(105%, 0, 0);
+  opacity: 0;
+}
+
+.door-hero.is-open .door-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.door-hero.is-open .door-title,
+.door-hero.is-open .door-title-top {
+  transform: translate3d(0, -20px, 0);
+  opacity: 0;
+}
+
+.font-viceroy {
+  font-family: "UTM ViceroyJF", var(--font-serif), serif;
+}
+
+.font-edwardian {
+  font-family: "UTM Edwardian", var(--font-serif), serif;
+}
+
+.font-dancing {
+  font-family: var(--font-dancing), var(--font-serif), serif;
+}
+
+/* ── Couple photos — slide in from sides ── */
+.door-photo-left,
+.door-photo-right {
+  will-change: transform;
+  transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.door-photo-left {
+  transform: translate3d(-120%, 0, 0);
+}
+
+.door-photo-right {
+  transform: translate3d(120%, 0, 0);
+}
+
+.door-hero.is-open .door-photo-left,
+.door-hero.is-open .door-photo-right {
+  transform: translate3d(0, 0, 0);
+}
