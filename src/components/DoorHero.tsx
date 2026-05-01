@@ -117,7 +117,7 @@ export default function DoorHero() {
               <div className="mx-auto mt-4 h-[1px] w-12 bg-gradient-to-r from-transparent via-gold-300 to-transparent" />
 
               <p className="mt-4 text-xs leading-relaxed text-slate-500">
-                Ông Trần Văn C<br />Và bà Lê Thị D
+                Ông Trần Văn Thanh<br />Và bà Trần Thị Thẳm
               </p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export default function DoorHero() {
               <div className="mx-auto mt-4 h-[1px] w-12 bg-gradient-to-r from-transparent via-rose-300 to-transparent" />
 
               <p className="mt-4 text-xs leading-relaxed text-slate-500">
-                Ông Ngô Văn A<br />Và bà Trần Thị B
+                Ông Ngô Quang Trung<br />Và bà Nguyễn Thị Hà
               </p>
             </div>
           </div>

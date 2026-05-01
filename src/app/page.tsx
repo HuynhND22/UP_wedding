@@ -1,5 +1,6 @@
 import DoorHero from "@/components/DoorHero";
 import GlassCard from "@/components/GlassCard";
+import PhotoGallery from "@/components/PhotoGallery";
 import SectionTitle from "@/components/SectionTitle";
 
 const EVENT_DATE = new Date(2026, 4, 10);
@@ -35,8 +36,116 @@ const MAP_URL =
   "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3842.2440828548747!2d108.37193697579428!3d15.631985550993535!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3169e78b41a487af%3A0x405ed9bffa5141ff!2zTmjDoCBow6BuZyB0aeG7h2MgY8aw4bubaSBUaOG6o28gWeG6v24!5e0!3m2!1sen!2s!4v1776527266047!5m2!1sen!2s";
 const MAP_OPEN =
   "https://www.google.com/maps/place/Nh%C3%A0+h%C3%A0ng+ti%E1%BB%87c+c%C6%B0%E1%BB%9Bi+Th%E1%BA%A3o+Y%E1%BA%BFn/";
+const SHEET_ID = "1E4CVF5B-GnGl7HywKHjUApiIOvxod7NWYiRti6RHVbI";
+const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
-export default function HomePage() {
+type PhotoItem = {
+  id: string;
+  title: string;
+  url: string;
+  fallbackUrl?: string;
+};
+
+const DRIVE_FILE_ID_PATTERNS = [/\/file\/d\/([^/]+)/i, /[?&]id=([^&]+)/i];
+
+const getGoogleDriveFileId = (url: string) => {
+  for (const pattern of DRIVE_FILE_ID_PATTERNS) {
+    const match = url.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return "";
+};
+
+const normalizePhotoUrl = (rawUrl: string): Pick<PhotoItem, "url" | "fallbackUrl"> | null => {
+  const url = rawUrl.trim();
+  if (!url) return null;
+
+  // Accept plain file id directly.
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(url)) {
+    return {
+      url: `https://lh3.googleusercontent.com/d/${url}=w2000`,
+      fallbackUrl: `https://drive.google.com/uc?export=view&id=${url}`
+    };
+  }
+
+  if (!url.includes("drive.google.com")) {
+    return { url };
+  }
+
+  const fileId = getGoogleDriveFileId(url);
+  if (!fileId) return null;
+
+  return {
+    // Primary link for embedding images from Drive
+    url: `https://lh3.googleusercontent.com/d/${fileId}=w2000`,
+    // Fallback in case the primary host is throttled
+    fallbackUrl: `https://drive.google.com/uc?export=view&id=${fileId}`
+  };
+};
+
+const parseCsvLine = (line: string) => {
+  const values: string[] = [];
+  let current = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+
+    if (char === '"') {
+      if (insideQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        insideQuotes = !insideQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !insideQuotes) {
+      values.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  values.push(current.trim());
+  return values;
+};
+
+const getSheetPhotos = async (): Promise<PhotoItem[]> => {
+  try {
+    const response = await fetch(SHEET_CSV_URL, {
+      next: { revalidate: 300 }
+    });
+
+    if (!response.ok) return [];
+
+    const csv = await response.text();
+    const rows = csv
+      .split(/\r?\n/)
+      .map((row) => row.trim())
+      .filter(Boolean);
+
+    if (rows.length <= 1) return [];
+
+    return rows.slice(1).reduce<PhotoItem[]>((acc, row) => {
+      const [id = "", title = "", url = ""] = parseCsvLine(row);
+      const normalized = normalizePhotoUrl(url);
+      if (!normalized) return acc;
+
+      acc.push({ id, title, url: normalized.url, fallbackUrl: normalized.fallbackUrl });
+      return acc;
+    }, []);
+  } catch {
+    return [];
+  }
+};
+
+export default async function HomePage() {
+  const photos = await getSheetPhotos();
+
   return (
     <div className="space-y-12 md:space-y-16">
       <DoorHero />
@@ -156,7 +265,7 @@ export default function HomePage() {
               <div className="text-xs font-medium text-slate-500">Địa chỉ</div>
               <div className="mt-1 text-2xl text-slate-900">Nhà hàng Thảo Yến</div>
               <p className="mt-2 text-sm text-slate-600">
-                Vui lòng đến sớm 15-20 phút để ổn định chỗ ngồi và chuẩn bị cho nghi thức chính.
+                Vui lòng đến sớm 15-20 phút để ổn định chỗ ngồi và chuẩn bị cho buổi tiệc.
               </p>
               <a
                 href={MAP_OPEN}
@@ -170,6 +279,8 @@ export default function HomePage() {
           </div>
         </GlassCard>
       </section>
+
+      <PhotoGallery photos={photos} />
     </div>
   );
 }
